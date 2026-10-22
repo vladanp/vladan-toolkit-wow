@@ -45,7 +45,8 @@ Chat: only change messages through `ChatFrameUtil.AddMessageEventFilter`; replac
 
 ## Releases (how the game gets updates)
 - Every push to `main` that changes `.lua`/`.toc`/`.pkgmeta` runs `.github/workflows/release.yml`: it tags the next
-  patch version (`v0.2.0` → `v0.2.1`) and BigWigs packager publishes a GitHub release (zip + `release.json`, flavor `forever`).
+  patch version (`v0.2.0` → `v0.2.1`) and re-runs itself on that tag, where BigWigs packager publishes a GitHub release
+  (zip + `release.json`, flavor `forever`). The packager refuses to release from a branch push, hence the two runs.
   Docs-only pushes don't release. To bump minor/major, push a tag like `v0.3.0` together with the commit.
 - `## Version: @project-version@` in the TOC is filled in by the packager.
 - WowUp-CF on this PC installs the addon from `https://github.com/vladanp/vladan-toolkit-wow` (Forever / Classic Beta client)

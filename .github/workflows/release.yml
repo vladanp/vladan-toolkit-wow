@@ -1,7 +1,8 @@
 name: Release
 
-# Every push to main that changes the addon tags the next patch version and publishes a
-# GitHub release (zip + release.json), which WowUp installs and auto-updates from.
+# Every push to main that changes the addon tags the next patch version, then re-runs this
+# workflow on that tag (tags pushed by GITHUB_TOKEN don't trigger runs; dispatches do).
+# The tag run publishes a GitHub release (zip + release.json) that WowUp auto-updates from.
 on:
   push:
     branches: [main]
@@ -10,26 +11,40 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
-concurrency: release
+concurrency: release-${{ github.ref }}
 
 jobs:
-  release:
+  tag:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Tag next patch version (unless this commit is already tagged)
+      - name: Tag next patch version and release it
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if ! git describe --exact-match --tags HEAD >/dev/null 2>&1; then
+          tag=$(git tag --points-at HEAD | head -1)
+          if [ -z "$tag" ]; then
             last=$(git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0)
             IFS=. read -r major minor patch <<< "${last#v}"
-            next="v$major.$minor.$((patch + 1))"
-            git tag "$next"
-            git push origin "$next"
+            tag="v$major.$minor.$((patch + 1))"
+            git tag "$tag"
+            git push origin "$tag"
           fi
+          gh workflow run release.yml --ref "$tag"
+
+  package:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: BigWigsMods/packager@v2
         env:
