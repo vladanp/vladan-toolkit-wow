@@ -33,7 +33,8 @@ function Module:IsEnabled()
 end
 
 -- Handlers only run while the module is ticked in /vt, so toggles apply instantly.
--- Modules that show UI also define m:OnToggle(enabled) to show/hide it.
+-- Modules that show UI also define m:OnToggle(enabled) to show/hide it; it runs at login,
+-- when the box is ticked and when one of the module's options changes.
 function Module:On(event, fn)
 	handlers[event] = handlers[event] or {}
 	table.insert(handlers[event], { module = self, fn = fn })
@@ -41,7 +42,7 @@ function Module:On(event, fn)
 end
 
 -- An extra setting shown indented under the module's checkbox, greyed out while the module is off.
--- { key, title, desc, default, onChange }: a boolean default makes a checkbox, a number default a
+-- { key, title, desc, default }: a boolean default makes a checkbox, a number default a
 -- slider (also min, max, step, format). { title, button, desc, onClick } makes a button.
 function Module:Option(o)
 	table.insert(self.options, o)
@@ -86,7 +87,6 @@ function VT:CreateMovable(key, point, x, y, template)
 		local p, _, rp, px, py = self:GetPoint()
 		VladanToolkitDB[key .. "Pos"] = { p, rp, px, py }
 	end)
-	f:SetPoint(point, x, y)
 	f:Hide()
 	movables[key] = f
 	return f
@@ -111,25 +111,23 @@ end
 -- Settings on the main page.
 local GENERAL = {
 	{ key = "LockFrames", title = "Lock windows", default = false,
-		desc = "Stops the XP card, buff reminder and LFG window from being dragged." },
+		desc = "Stops all toolkit windows from being dragged." },
 	{ key = "ChatMessages", title = "Chat messages", default = true,
 		desc = "Show automatic toolkit messages in chat, like what was sold, repair costs and LFG alerts." },
 	{ key = "FrameScale", title = "Window scale", default = 1, min = 0.6, max = 1.6, step = 0.05,
 		format = VT.format.percent, onChange = ApplyScale,
-		desc = "Size of all toolkit windows: the XP card, buff reminder and LFG window." },
+		desc = "Size of all toolkit windows." },
 	{ title = "Window positions", button = "Reset", onClick = ResetPositions,
 		desc = "Moves all toolkit windows back to where they started." },
 }
 
 -- Registers one setting (checkbox, slider or button) on a settings page and returns its initializer.
-local function AddSetting(page, layout, dbKey, o)
+-- Blizzard saves a missing value as the default, then calls onChange after each change (with args we ignore).
+local function AddSetting(page, layout, dbKey, o, onChange)
 	if o.onClick then
 		local init = CreateSettingsButtonInitializer(o.title, o.button, o.onClick, o.desc, true)
 		layout:AddInitializer(init)
 		return init
-	end
-	if VladanToolkitDB[dbKey] == nil then
-		VladanToolkitDB[dbKey] = o.default
 	end
 	local variable = addonName .. "_" .. dbKey
 	local isNumber = type(o.default) == "number"
@@ -143,8 +141,8 @@ local function AddSetting(page, layout, dbKey, o)
 	else
 		init = Settings.CreateCheckbox(page, setting, o.desc)
 	end
-	if o.onChange then
-		Settings.SetOnValueChangedCallback(variable, function(_, value) o.onChange(value) end)
+	if onChange then
+		Settings.SetOnValueChangedCallback(variable, onChange)
 	end
 	return init
 end
@@ -158,7 +156,7 @@ local function Init()
 	category, layout = Settings.RegisterVerticalLayoutCategory("Vladan Toolkit")
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("General"))
 	for _, o in ipairs(GENERAL) do
-		AddSetting(category, layout, o.key, o)
+		AddSetting(category, layout, o.key, o, o.onChange)
 	end
 
 	local pages = {}
@@ -166,10 +164,10 @@ local function Init()
 		local section = m.section or "Other"
 		pages[section] = pages[section] or { Settings.RegisterVerticalLayoutSubcategory(category, section) }
 		local page, pageLayout = pages[section][1], pages[section][2]
-		local toggle = AddSetting(page, pageLayout, m.key, { title = m.title, desc = m.desc, default = m.default,
-			onChange = m.OnToggle and function(value) m:OnToggle(value) end })
+		local update = m.OnToggle and function() m:OnToggle(m:IsEnabled()) end
+		local toggle = AddSetting(page, pageLayout, m.key, { title = m.title, desc = m.desc, default = m.default }, update)
 		for _, o in ipairs(m.options) do
-			local init = AddSetting(page, pageLayout, o.key and m.key .. o.key, o)
+			local init = AddSetting(page, pageLayout, o.key and m.key .. o.key, o, update)
 			init:SetParentInitializer(toggle, function() return m:IsEnabled() end)
 		end
 	end
@@ -186,12 +184,13 @@ frame:SetScript("OnEvent", function(_, event, ...)
 		Init()
 	elseif event == "PLAYER_LOGIN" then
 		for _, m in ipairs(VT.modules) do
-			if m.OnToggle then m:OnToggle(m:IsEnabled()) end
+			if m.OnToggle then securecallfunction(m.OnToggle, m, m:IsEnabled()) end
 		end
 	end
+	-- securecallfunction reports an error without stopping the other modules on the same event.
 	for _, h in ipairs(handlers[event] or {}) do
 		if h.module:IsEnabled() then
-			h.fn(...)
+			securecallfunction(h.fn, ...)
 		end
 	end
 end)

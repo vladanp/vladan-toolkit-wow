@@ -68,10 +68,7 @@ local clean = VT:NewModule("MinimapHoverButtons", "Minimap buttons on hover",
 clean.section = "Minimap"
 
 local function Buttons()
-	local list = {}
-	for _, b in pairs({ GameTimeFrame, AddonCompartmentFrame, MinimapCluster.Tracking }) do
-		table.insert(list, b)
-	end
+	local list = { GameTimeFrame, AddonCompartmentFrame, MinimapCluster.Tracking }
 	for _, child in ipairs({ Minimap:GetChildren() }) do
 		local name = child:GetName()
 		if name and name:find("^LibDBIcon10_") then table.insert(list, child) end

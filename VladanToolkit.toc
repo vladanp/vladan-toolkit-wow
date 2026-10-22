@@ -16,6 +16,7 @@ Modules\XPTracker.lua
 Modules\OpenMail.lua
 Modules\LowSupplies.lua
 Modules\BuffReminder.lua
+Modules\Screenshots.lua
 Modules\ChatLinks.lua
 Modules\LFGScanner.lua
 Modules\Minimap.lua

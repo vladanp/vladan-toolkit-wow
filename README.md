@@ -14,6 +14,7 @@ Type **`/vt`** in game (or use the addon compartment on the minimap) to open the
 | XP tracker | A card with Forever's own XP bar art, XP per hour, projected level up time, and kills and quests to level. Hover for details, drag to move, right click to reset. |
 | Auto open all mail | Presses the mailbox's Open All button for you (skips COD and GM mail). |
 | Missing buff reminder | Out of combat, pulsing icons for your missing class buffs. Click an icon to cast it on yourself, drag the title to move. |
+| Auto screenshots | Takes a screenshot when you level up or kill a dungeon or raid boss. |
 | Copyable chat links | Web links in chat become clickable; click, then Ctrl+C. |
 | LFG chat scanner | `/vt lfg` opens a window of LFG and LFM posts from chat channels, grouped by dungeon, with roles and class colors. Filter by dungeon or word (a sound plays for new matches), click to whisper, Shift click to invite. |
 | Square minimap | A clean square minimap with a thin border. |
@@ -30,6 +31,7 @@ sit under the feature they belong to and grey out while it is off:
 
 - **XP tracker:** XP per hour window (5 to 60 min), details line, floating XP gains, reset session.
 - **Missing buff reminder:** icon size, spell names, pulsing border.
+- **Auto screenshots:** on level up, on boss kills.
 - **LFG chat scanner:** how long posts stay, sound and chat line for new matches.
 - **Auto zoom out:** delay (3 to 30 sec).
 - **Low supplies warning:** durability threshold, supplies threshold, sound.

@@ -27,7 +27,7 @@ local DUNGEONS = {
 	{ "Excavation Site", "excavation", "excav" },
 	{ "Razorfen Kraul", "rfk", "kraul" },
 	{ "City of Dalaran", "dalaran", "dala" },
-	{ "Scarlet Monastery", "sm", "scarlet", "gy", "graveyard", "lib", "library", "arm", "armory", "cath", "cathedral" },
+	{ "Scarlet Monastery", "sm", "scarlet", "gy", "graveyard", "lib", "library", "armory", "cath", "cathedral" },
 	{ "The Drowned City", "drowned" },
 	{ "Razorfen Downs", "rfd", "downs" },
 	{ "Uldaman", "ulda", "uldaman" },
@@ -172,7 +172,7 @@ for i = 1, ROWS do
 	row.text:SetTextColor(0.7, 0.7, 0.75)
 
 	row:SetScript("OnEnter", ShowTooltip)
-	row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	row:SetScript("OnLeave", GameTooltip_Hide)
 	row:SetScript("OnClick", function(self)
 		if not self.post then return end
 		if IsShiftKeyDown() then
@@ -252,13 +252,11 @@ f:SetScript("OnShow", function()
 	Render()
 end)
 
-C_Timer.NewTicker(15, function()
-	if f:IsShown() then Render() end -- keeps ages and expiry current
-end)
+C_Timer.NewTicker(15, Render) -- keeps ages current and drops old posts, also while the window is closed
 
 VT.commands.lfg = function()
 	if not m:IsEnabled() then
-		VT:Print("The LFG chat scanner is off. Turn it on in /vt.")
+		return VT:Print("The LFG chat scanner is off. Turn it on in /vt.")
 	end
 	f:SetShown(not f:IsShown())
 end
@@ -273,9 +271,12 @@ m:On("CHAT_MSG_CHANNEL", function(text, sender, _, _, _, _, _, _, _, _, _, guid)
 	if issecretvalue(text) or issecretvalue(sender) then return end
 	local lower = text:lower()
 	local kind, roles = Classify(lower)
-	if not kind or Ambiguate(sender, "short") == UnitName("player") then return end
+	local name = kind and Ambiguate(sender, "short")
+	if not kind or name == UnitName("player") then return end
+	local dungeon = Dungeon(lower)
+	-- A plain "lf" or "need" only counts when it names a dungeon, so guild and crafting posts stay out.
+	if kind == "LFM" and not dungeon and not Word(lower, "lf%d*m") then return end
 
-	local name = Ambiguate(sender, "short")
 	if guid and not issecretvalue(guid) then
 		local _, class = GetPlayerInfoByGUID(guid)
 		local color = class and C_ClassColor.GetClassColor(class)
@@ -283,7 +284,7 @@ m:On("CHAT_MSG_CHANNEL", function(text, sender, _, _, _, _, _, _, _, _, _, guid)
 	end
 	local isNew = posts[sender] == nil
 	local p = { sender = sender, name = name, text = text, lower = lower, kind = kind, roles = roles,
-		dungeon = Dungeon(lower), time = GetTime() }
+		dungeon = dungeon, time = GetTime() }
 	posts[sender] = p
 
 	-- With a filter set, a new matching poster can play a sound and print a line while the window is closed.

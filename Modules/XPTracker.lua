@@ -166,13 +166,16 @@ f:SetScript("OnEnter", function(self)
 	GameTooltip:AddLine("Drag to move   ·   Right click to reset the session", 0.6, 0.6, 0.6)
 	GameTooltip:Show()
 end)
-f:SetScript("OnLeave", function() GameTooltip:Hide() end)
+f:SetScript("OnLeave", GameTooltip_Hide)
+
+-- Right click on the card or the settings button.
+local function Reset()
+	ResetSession()
+	Refresh()
+	VT:Print("XP session reset.")
+end
 f:SetScript("OnMouseUp", function(_, button)
-	if button == "RightButton" then
-		ResetSession()
-		VT:Print("XP session reset.")
-		Refresh()
-	end
+	if button == "RightButton" then Reset() end
 end)
 
 -- Tracking
@@ -219,14 +222,12 @@ end)
 C_Timer.NewTicker(10, Refresh) -- keeps XP per hour and the projection current while idle
 
 m:Option({ key = "Window", title = "XP per hour based on", default = 15, min = 5, max = 60, step = 5,
-	format = function(v) return "last " .. v .. " min" end, onChange = Refresh,
+	format = function(v) return "last " .. v .. " min" end,
 	desc = "How many recent minutes XP per hour and the level up projection use. Shorter reacts faster, longer is steadier." })
-m:Option({ key = "Details", title = "Details line", default = true, onChange = Refresh,
+m:Option({ key = "Details", title = "Details line", default = true,
 	desc = "Show the line with level up time, rested XP, kills and quests to level." })
 m:Option({ key = "Gains", title = "Floating XP gains", default = true,
 	desc = "Show a rising +XP number on the bar for each gain." })
-m:Option({ title = "Session", button = "Reset", onClick = function()
-	ResetSession()
-	Refresh()
-	VT:Print("XP session reset.")
-end, desc = "Start counting XP per hour and session totals from now." })
+-- The reset button needs Reset above, so this module's options sit at the end.
+m:Option({ title = "Session", button = "Reset", onClick = Reset,
+	desc = "Start counting XP per hour and session totals from now." })

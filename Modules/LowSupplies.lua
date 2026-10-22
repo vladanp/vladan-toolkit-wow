@@ -2,6 +2,11 @@ local _, VT = ...
 local m = VT:NewModule("LowSupplies", "Low supplies warning",
 	"Warns when your gear is about to break or items on your auto buy list (/vt buy) run low. Right click the warning to dismiss it, drag to move.")
 m.section = "Loot and vendors"
+m:Option({ key = "Durability", title = "Warn when gear is below", default = 25, min = 10, max = 50, step = 5,
+	format = VT.format.percent100, desc = "Durability of your most damaged item." })
+m:Option({ key = "Supplies", title = "Warn when supplies are below", default = 25, min = 10, max = 90, step = 5,
+	format = VT.format.percent100, desc = "Share of the amount on your auto buy list (/vt buy)." })
+m:Option({ key = "Sound", title = "Sound", default = true, desc = "Play a warning sound when something new runs low." })
 
 local REPAIR_ICON = 136241 -- blacksmith hammer
 local PAD = 10
@@ -71,12 +76,6 @@ f:SetScript("OnMouseUp", function(_, button)
 		f:Hide()
 	end
 end)
-
-m:Option({ key = "Durability", title = "Warn when gear is below", default = 25, min = 10, max = 50, step = 5,
-	format = VT.format.percent100, onChange = Refresh, desc = "Durability of your most damaged item." })
-m:Option({ key = "Supplies", title = "Warn when supplies are below", default = 25, min = 10, max = 90, step = 5,
-	format = VT.format.percent100, onChange = Refresh, desc = "Share of the amount on your auto buy list (/vt buy)." })
-m:Option({ key = "Sound", title = "Sound", default = true, desc = "Play a warning sound when something new runs low." })
 
 m.OnToggle = Refresh
 for _, event in ipairs({ "UPDATE_INVENTORY_DURABILITY", "BAG_UPDATE_DELAYED", "PLAYER_ENTERING_WORLD" }) do

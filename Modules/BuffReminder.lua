@@ -2,6 +2,11 @@ local _, VT = ...
 local m = VT:NewModule("BuffReminder", "Missing buff reminder",
 	"Out of combat, shows pulsing icons for your class buffs that are missing. Click an icon to cast it on yourself, drag the title to move.")
 m.section = "Leveling and buffs"
+m:Option({ key = "Size", title = "Icon size", default = 40, min = 24, max = 64, step = 2, format = VT.format.pixels,
+	desc = "Size of the missing buff icons." })
+m:Option({ key = "Names", title = "Spell names", default = true, desc = "Show the spell name under each icon." })
+m:Option({ key = "Pulse", title = "Pulsing border", default = true,
+	desc = "Animate the red border so missing buffs catch your eye." })
 
 -- Each group is satisfied by any buff in it (so a raid version or another player's cast counts).
 -- ponytail: English spell names (enUS client), and only the spells you know are suggested.
@@ -63,7 +68,7 @@ local function Icon(i)
 		GameTooltip:AddLine("Click to cast on yourself", 0.3, 1, 0.3)
 		GameTooltip:Show()
 	end)
-	b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	b:SetScript("OnLeave", GameTooltip_Hide)
 
 	icons[i] = b
 	return b
@@ -110,13 +115,6 @@ local function Refresh()
 	f:SetSize(math.max(#missing * (size + GAP) - GAP, 1), 16 + size + (names and 28 or 4))
 	f:SetShown(#missing > 0)
 end
-
-m:Option({ key = "Size", title = "Icon size", default = 40, min = 24, max = 64, step = 2, format = VT.format.pixels,
-	onChange = Refresh, desc = "Size of the missing buff icons." })
-m:Option({ key = "Names", title = "Spell names", default = true, onChange = Refresh,
-	desc = "Show the spell name under each icon." })
-m:Option({ key = "Pulse", title = "Pulsing border", default = true, onChange = Refresh,
-	desc = "Animate the red border so missing buffs catch your eye." })
 
 m.OnToggle = Refresh
 -- Fires just before combat lockdown starts, so the secure icons can still be hidden here.

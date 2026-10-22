@@ -2,8 +2,16 @@ local _, VT = ...
 local m = VT:NewModule("ErrorFilter", "Error spam filter",
 	"Hides the red error spam in the middle of the screen, like Not enough rage or Out of range. Other errors still show.")
 m.section = "Interface"
+m:Option({ key = "Resources", title = "Not enough rage, energy or mana", default = true,
+	desc = "Errors when you lack the resource for an ability." })
+m:Option({ key = "Cooldowns", title = "Not ready yet", default = true,
+	desc = "Errors when an ability or item is still on cooldown." })
+m:Option({ key = "Range", title = "Range, facing and target", default = true,
+	desc = "Out of range, facing the wrong way, not in line of sight and no target." })
+m:Option({ key = "CombatOnly", title = "Only during combat", default = false,
+	desc = "Show these errors again out of combat." })
 
--- Error types per group, as the game names them (LE_GAME_ERR_<name>); names a build lacks are skipped.
+-- Error types per group, as the game names them (LE_GAME_ERR_<name>); Blizzard skips names a build lacks (nil).
 local GROUPS = {
 	Resources = { "OUT_OF_RAGE", "OUT_OF_ENERGY", "OUT_OF_MANA", "OUT_OF_FOCUS", "OUT_OF_COMBO_POINTS", "OUT_OF_HEALTH",
 		"OUT_OF_POWER_DISPLAY" },
@@ -22,25 +30,13 @@ local function Apply(inCombat)
 	for group, names in pairs(GROUPS) do
 		local hide = active and m:Get(group)
 		for _, name in ipairs(names) do
-			local messageType = _G["LE_GAME_ERR_" .. name]
-			if messageType then UIErrorsFrame:SetMessageTypeEnabled(messageType, not hide) end
+			UIErrorsFrame:SetMessageTypeEnabled(_G["LE_GAME_ERR_" .. name], not hide)
 		end
 	end
 end
 
-local function Reapply()
+m.OnToggle = function()
 	Apply(UnitAffectingCombat("player"))
 end
-
-m:Option({ key = "Resources", title = "Not enough rage, energy or mana", default = true, onChange = Reapply,
-	desc = "Errors when you lack the resource for an ability." })
-m:Option({ key = "Cooldowns", title = "Not ready yet", default = true, onChange = Reapply,
-	desc = "Errors when an ability or item is still on cooldown." })
-m:Option({ key = "Range", title = "Range, facing and target", default = true, onChange = Reapply,
-	desc = "Out of range, facing the wrong way, not in line of sight and no target." })
-m:Option({ key = "CombatOnly", title = "Only during combat", default = false, onChange = Reapply,
-	desc = "Show these errors again out of combat." })
-
-m.OnToggle = Reapply
 m:On("PLAYER_REGEN_DISABLED", function() Apply(true) end)
 m:On("PLAYER_REGEN_ENABLED", function() Apply(false) end)
