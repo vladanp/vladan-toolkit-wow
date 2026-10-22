@@ -1,6 +1,6 @@
 local _, VT = ...
 
--- Uses Forever's own "Sell All Junk" (server-side, no sell throttling).
+-- Uses Forever's own "Sell All Junk" (sold on the server in one go, so no throttling).
 local junk = VT:NewModule("SellJunk", "Sell junk", "Sell all grey items when you open a vendor.")
 junk:On("MERCHANT_SHOW", function()
 	local n = C_MerchantFrame.GetNumJunkItems()

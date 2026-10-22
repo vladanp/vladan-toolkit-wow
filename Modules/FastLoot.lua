@@ -1,5 +1,5 @@
 local _, VT = ...
-local m = VT:NewModule("FastLoot", "Faster auto-loot", "Grab all loot instantly when auto-loot is on.")
+local m = VT:NewModule("FastLoot", "Faster auto loot", "Grab all loot instantly when auto loot is on.")
 
 local last = 0
 m:On("LOOT_READY", function()

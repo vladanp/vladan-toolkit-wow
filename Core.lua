@@ -1,8 +1,8 @@
 local addonName, VT = ...
 VT.modules = {}
-VT.commands = {} -- "/vt <name> <args>" -> fn(args)
+VT.commands = {} -- "/vt <name> <args>" calls VT.commands.<name>(args)
 
-local handlers = {} -- event -> { { module, fn }, ... }
+local handlers = {} -- event name to a list of { module, fn }
 local frame = CreateFrame("Frame")
 local category
 
@@ -49,13 +49,6 @@ function VT:CreateMovable(key, point, x, y, template)
 	f:Hide()
 	movables[key] = f
 	return f
-end
-
--- Dark translucent panel with a 1px border (shared look for toolkit windows).
-function VT:StylePanel(f)
-	f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
-	f:SetBackdropColor(0.04, 0.04, 0.06, 0.8)
-	f:SetBackdropBorderColor(0, 0, 0, 1)
 end
 
 local function Init()

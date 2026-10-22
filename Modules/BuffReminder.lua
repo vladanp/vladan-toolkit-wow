@@ -1,5 +1,5 @@
 local _, VT = ...
-local m = VT:NewModule("BuffReminder", "Missing-buff reminder",
+local m = VT:NewModule("BuffReminder", "Missing buff reminder",
 	"Out of combat, shows pulsing icons for your class buffs that are missing. Hover for the spell, drag to move.")
 
 -- Each group is satisfied by any buff in it (so a raid version or another player's cast counts).

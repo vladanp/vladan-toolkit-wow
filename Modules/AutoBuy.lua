@@ -1,8 +1,8 @@
 local _, VT = ...
-local m = VT:NewModule("AutoBuy", "Auto-buy reagents",
+local m = VT:NewModule("AutoBuy", "Auto buy reagents",
 	"At vendors, tops up the items on this character's list. Edit it with /vt buy.")
 
-local USAGE = "/vt buy <shift-click item or item ID> <count>   (count 0 removes, /vt buy alone lists)"
+local USAGE = "/vt buy <shift click item or item ID> <count>   (count 0 removes, /vt buy alone lists)"
 
 m:On("MERCHANT_SHOW", function()
 	local list = VladanToolkitCharDB.buy or {}

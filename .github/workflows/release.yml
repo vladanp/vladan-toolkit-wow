@@ -1,8 +1,8 @@
 name: Release
 
-# Every push to main that changes the addon tags the next patch version, then re-runs this
-# workflow on that tag (tags pushed by GITHUB_TOKEN don't trigger runs; dispatches do).
-# The tag run publishes a GitHub release (zip + release.json) that WowUp auto-updates from.
+# Every push to main that changes the addon tags the next patch version, then runs this
+# workflow again on that tag (tags pushed by GITHUB_TOKEN start no runs; dispatches do).
+# The tag run publishes a GitHub release (zip + release.json) that WowUp installs and updates from.
 on:
   push:
     branches: [main]
