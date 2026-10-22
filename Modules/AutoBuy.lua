@@ -1,6 +1,7 @@
 local _, VT = ...
 local m = VT:NewModule("AutoBuy", "Auto buy reagents",
 	"At vendors, tops up the items on this character's list. Edit it with /vt buy.")
+m.section = "Loot and vendors"
 
 local USAGE = "/vt buy <shift click item or item ID> <count>   (count 0 removes, /vt buy alone lists)"
 

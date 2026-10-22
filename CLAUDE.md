@@ -47,9 +47,12 @@ taints chat and breaks secret value handling.
    ```lua
    local _, VT = ...
    local m = VT:NewModule("<Key>", "<Checkbox title>", "<Tooltip>") -- 4th arg false = off by default
+   m.section = "Social" -- settings group: Loot and vendors, Leveling and buffs, Social, Minimap
    m:On("SOME_EVENT", function(...) --[[ runs only while enabled ]] end)
    ```
-2. Add `Modules\<Name>.lua` to the TOC.
+2. Add `Modules\<Name>.lua` to the TOC next to the other modules of its section (a header is added whenever the section changes).
+   Secure frames (e.g. click to cast buttons) can't be changed in combat: check `InCombatLockdown()` first;
+   `PLAYER_REGEN_DISABLED` still allows a last change just before combat starts.
 3. The checkbox appears in `/vt` automatically. Handlers are gated by the toggle, so nothing else is needed.
    A feature that shows UI also sets `m.OnToggle = function(self, enabled) ... end` to show or hide it
    (called at login and whenever the box is ticked).

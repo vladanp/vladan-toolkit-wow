@@ -1,6 +1,7 @@
 local _, VT = ...
 local m = VT:NewModule("XPTracker", "XP tracker",
 	"XP card with XP per hour, projected level up time, and kills and quests to level. Hover for details, drag to move, right click to reset the session.")
+m.section = "Leveling and buffs"
 
 local WINDOW = 900 -- XP per hour covers the last 15 minutes, so breaks don't skew the projection for long
 local W, BAR, PAD = 280, 10, 12

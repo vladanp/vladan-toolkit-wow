@@ -1,6 +1,7 @@
 local _, VT = ...
 local m = VT:NewModule("AutoOpenMail", "Auto open all mail",
 	"Presses the mailbox's own Open All button when you open a mailbox (it skips COD and GM mail).")
+m.section = "Loot and vendors"
 
 local pending
 m:On("MAIL_SHOW", function() pending = true end)

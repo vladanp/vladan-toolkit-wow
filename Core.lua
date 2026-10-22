@@ -61,8 +61,15 @@ local function Init()
 			f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
 		end
 	end
-	category = Settings.RegisterVerticalLayoutCategory("Vladan Toolkit")
+	local layout
+	category, layout = Settings.RegisterVerticalLayoutCategory("Vladan Toolkit")
+	local section
 	for _, m in ipairs(VT.modules) do
+		-- Modules set m.section; a header goes in whenever it changes (TOC order keeps sections together).
+		if m.section and m.section ~= section then
+			section = m.section
+			layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(section))
+		end
 		if VladanToolkitDB[m.key] == nil then
 			VladanToolkitDB[m.key] = m.default
 		end

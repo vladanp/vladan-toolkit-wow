@@ -1,6 +1,7 @@
 local _, VT = ...
 local m = VT:NewModule("BuffReminder", "Missing buff reminder",
-	"Out of combat, shows pulsing icons for your class buffs that are missing. Hover for the spell, drag to move.")
+	"Out of combat, shows pulsing icons for your class buffs that are missing. Click an icon to cast it on yourself, drag the title to move.")
+m.section = "Leveling and buffs"
 
 -- Each group is satisfied by any buff in it (so a raid version or another player's cast counts).
 -- ponytail: English spell names (enUS client), and only the spells you know are suggested.
@@ -31,7 +32,12 @@ local icons = {}
 
 local function Icon(i)
 	if icons[i] then return icons[i] end
-	local b = CreateFrame("Frame", nil, f)
+	-- Secure button so a click casts the buff. Secure frames can't be changed in combat,
+	-- which is fine because the reminder only updates out of combat.
+	local b = CreateFrame("Button", nil, f, "SecureActionButtonTemplate")
+	b:RegisterForClicks("AnyUp", "AnyDown") -- fires on press or release, whichever the ActionButtonUseKeyDown setting picks
+	b:SetAttribute("type", "spell")
+	b:SetAttribute("unit", "player")
 	b:SetSize(SIZE, SIZE)
 	b:SetPoint("TOPLEFT", (i - 1) * (SIZE + GAP), -16)
 
@@ -55,14 +61,10 @@ local function Icon(i)
 	b.label:SetPoint("TOP", b, "BOTTOM", 0, -4)
 	b.label:SetWidth(SIZE + GAP)
 
-	-- Icons take the mouse (for tooltips), so pass drags on to the panel.
-	b:EnableMouse(true)
-	b:RegisterForDrag("LeftButton")
-	b:SetScript("OnDragStart", function() f:StartMoving() end)
-	b:SetScript("OnDragStop", function() f:GetScript("OnDragStop")(f) end)
 	b:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
 		GameTooltip:SetSpellByID(self.spellID)
+		GameTooltip:AddLine("Click to cast on yourself", 0.3, 1, 0.3)
 		GameTooltip:Show()
 	end)
 	b:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -72,7 +74,8 @@ local function Icon(i)
 end
 
 local function Refresh()
-	-- Auras can be secret in combat, so only check out of it.
+	-- Secure icons are locked in combat (the frame is already hidden then), and auras can be secret in combat.
+	if InCombatLockdown() then return end
 	if not m:IsEnabled() or UnitAffectingCombat("player") or UnitIsDeadOrGhost("player") then
 		return f:Hide()
 	end
@@ -93,6 +96,7 @@ local function Refresh()
 	for i, info in ipairs(missing) do
 		local b = Icon(i)
 		b.spellID = info.spellID
+		b:SetAttribute("spell", info.name) -- by name, so it casts the highest rank you know
 		b.icon:SetTexture(info.iconID)
 		b.label:SetText(info.name)
 		b:Show()
@@ -105,6 +109,7 @@ local function Refresh()
 end
 
 m.OnToggle = Refresh
+-- Fires just before combat lockdown starts, so the secure icons can still be hidden here.
 m:On("PLAYER_REGEN_DISABLED", function() f:Hide() end)
 for _, event in ipairs({ "PLAYER_REGEN_ENABLED", "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "PLAYER_ALIVE", "PLAYER_UNGHOST" }) do
 	m:On(event, Refresh)

@@ -1,6 +1,7 @@
 local _, VT = ...
 local m = VT:NewModule("ChatLinks", "Copyable chat links",
 	"Web links in chat become clickable. Click one to put it in the chat box, then press Ctrl+C.")
+m.section = "Social"
 
 local LINK = "|cff66bbff|Hvtkurl:%1|h[%1]|h|r"
 
