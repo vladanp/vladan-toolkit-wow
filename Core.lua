@@ -31,14 +31,12 @@ function VT:NewModule(key, title, desc, default)
 	return m
 end
 
--- Draggable one-line text display; its position is saved per key (restored in Init).
-local textFrames = {}
-function VT:CreateTextFrame(key, point, x, y)
-	local f = CreateFrame("Frame", nil, UIParent)
-	f:SetSize(220, 20)
-	f.text = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	f.text:SetPoint("CENTER")
+-- Hidden, draggable frame whose position is saved per key (restored in Init).
+local movables = {}
+function VT:CreateMovable(key, point, x, y, template)
+	local f = CreateFrame("Frame", nil, UIParent, template)
 	f:SetMovable(true)
+	f:SetClampedToScreen(true)
 	f:EnableMouse(true)
 	f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving)
@@ -49,14 +47,21 @@ function VT:CreateTextFrame(key, point, x, y)
 	end)
 	f:SetPoint(point, x, y)
 	f:Hide()
-	textFrames[key] = f
+	movables[key] = f
 	return f
+end
+
+-- Dark translucent panel with a 1px border (shared look for toolkit windows).
+function VT:StylePanel(f)
+	f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+	f:SetBackdropColor(0.04, 0.04, 0.06, 0.8)
+	f:SetBackdropBorderColor(0, 0, 0, 1)
 end
 
 local function Init()
 	VladanToolkitDB = VladanToolkitDB or {}
 	VladanToolkitCharDB = VladanToolkitCharDB or {}
-	for key, f in pairs(textFrames) do
+	for key, f in pairs(movables) do
 		local pos = VladanToolkitDB[key .. "Pos"]
 		if pos then
 			f:ClearAllPoints()

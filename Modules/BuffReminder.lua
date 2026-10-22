@@ -1,6 +1,6 @@
 local _, VT = ...
 local m = VT:NewModule("BuffReminder", "Missing-buff reminder",
-	"Out of combat, shows your class buffs that are missing. Drag to move.")
+	"Out of combat, shows pulsing icons for your class buffs that are missing. Hover for the spell, drag to move.")
 
 -- Each group is satisfied by any buff in it (so a raid version or another player's cast counts).
 -- ponytail: English spell names (enUS client), and only the spells you know are suggested.
@@ -19,7 +19,57 @@ local BUFFS = {
 		"Greater Blessing of Sanctuary" } },
 }
 
-local f = VT:CreateTextFrame("BuffReminder", "CENTER", 0, 180)
+local SIZE, GAP = 40, 16
+
+local f = VT:CreateMovable("BuffReminder", "CENTER", 0, 180)
+f:SetHeight(SIZE + 44)
+local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+title:SetPoint("TOP")
+title:SetText("MISSING BUFFS")
+
+local icons = {}
+
+local function Icon(i)
+	if icons[i] then return icons[i] end
+	local b = CreateFrame("Frame", nil, f)
+	b:SetSize(SIZE, SIZE)
+	b:SetPoint("TOPLEFT", (i - 1) * (SIZE + GAP), -16)
+
+	local glow = b:CreateTexture(nil, "BACKGROUND") -- red frame that pulses
+	glow:SetPoint("TOPLEFT", -2, 2)
+	glow:SetPoint("BOTTOMRIGHT", 2, -2)
+	glow:SetColorTexture(1, 0.2, 0.1)
+	local pulse = glow:CreateAnimationGroup()
+	pulse:SetLooping("BOUNCE")
+	local fade = pulse:CreateAnimation("Alpha")
+	fade:SetFromAlpha(1)
+	fade:SetToAlpha(0.2)
+	fade:SetDuration(0.7)
+	fade:SetSmoothing("IN_OUT")
+	pulse:Play()
+
+	b.icon = b:CreateTexture(nil, "ARTWORK")
+	b.icon:SetAllPoints()
+	b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- trim the default icon border
+	b.label = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	b.label:SetPoint("TOP", b, "BOTTOM", 0, -4)
+	b.label:SetWidth(SIZE + GAP)
+
+	-- Icons take the mouse (for tooltips), so pass drags on to the panel.
+	b:EnableMouse(true)
+	b:RegisterForDrag("LeftButton")
+	b:SetScript("OnDragStart", function() f:StartMoving() end)
+	b:SetScript("OnDragStop", function() f:GetScript("OnDragStop")(f) end)
+	b:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:SetSpellByID(self.spellID)
+		GameTooltip:Show()
+	end)
+	b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+	icons[i] = b
+	return b
+end
 
 local function Refresh()
 	-- Auras can be secret in combat, so only check out of it.
@@ -37,10 +87,20 @@ local function Refresh()
 			active = active or C_UnitAuras.GetAuraDataBySpellName("player", name, "HELPFUL") ~= nil
 		end
 		if known and not active then
-			table.insert(missing, "|T" .. known.iconID .. ":16|t " .. known.name)
+			table.insert(missing, known)
 		end
 	end
-	f.text:SetText("Missing: " .. table.concat(missing, ", "))
+	for i, info in ipairs(missing) do
+		local b = Icon(i)
+		b.spellID = info.spellID
+		b.icon:SetTexture(info.iconID)
+		b.label:SetText(info.name)
+		b:Show()
+	end
+	for i = #missing + 1, #icons do
+		icons[i]:Hide()
+	end
+	f:SetWidth(math.max(#missing * (SIZE + GAP) - GAP, 1))
 	f:SetShown(#missing > 0)
 end
 

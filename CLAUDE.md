@@ -23,7 +23,7 @@ Modules/<Name>.lua    # one file per feature
 SavedVariables: `VladanToolkitDB` (account-wide, flat: `VladanToolkitDB.<ModuleKey>` is the on/off flag,
 `<Key>Pos` a saved frame position) and `VladanToolkitCharDB` (per character, e.g. the auto-buy list).
 
-Core helpers: `VT:Print(...)`, `VT:CreateTextFrame(key, point, x, y)` (draggable text, position saved),
+Core helpers: `VT:Print(...)`, `VT:CreateMovable(key, point, x, y, template)` (draggable frame, position saved), `VT:StylePanel(f)` (shared dark panel look, needs "BackdropTemplate"),
 `VT.commands.<name> = fn(args)` (adds `/vt <name> ...`), `m:IsEnabled()`.
 
 **Reference source:** Blizzard's Forever UI code is mirrored at `github.com/Gethe/wow-ui-source` (branch `forever`)
