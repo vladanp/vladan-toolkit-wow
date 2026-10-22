@@ -14,7 +14,10 @@ Modules\Merchant.lua
 Modules\AutoBuy.lua
 Modules\XPTracker.lua
 Modules\OpenMail.lua
+Modules\LowSupplies.lua
 Modules\BuffReminder.lua
 Modules\ChatLinks.lua
 Modules\LFGScanner.lua
 Modules\Minimap.lua
+Modules\ErrorFilter.lua
+Modules\TooltipExtras.lua

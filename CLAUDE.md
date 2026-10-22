@@ -53,7 +53,7 @@ taints chat and breaks secret value handling.
    ```lua
    local _, VT = ...
    local m = VT:NewModule("<Key>", "<Checkbox title>", "<Tooltip>") -- 4th arg false = off by default
-   m.section = "Social" -- settings page: Loot and vendors, Leveling and buffs, Social, Minimap
+   m.section = "Social" -- settings page: Loot and vendors, Leveling and buffs, Social, Minimap, Interface
    m:On("SOME_EVENT", function(...) --[[ runs only while enabled ]] end)
    -- optional extra settings, stored as VladanToolkitDB.<Key><OptionKey>, read with m:Get("<OptionKey>"):
    m:Option({ key = "Delay", title = "Delay", default = 10, min = 3, max = 30, step = 1, format = VT.format.seconds, desc = "..." })

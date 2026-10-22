@@ -18,7 +18,8 @@ end
 
 -- Slider label formats.
 VT.format = {
-	percent = function(v) return ("%d%%"):format(v * 100 + 0.5) end,
+	percent = function(v) return ("%d%%"):format(v * 100 + 0.5) end, -- for 0 to 1 values
+	percent100 = function(v) return v .. "%" end, -- for 0 to 100 values
 	minutes = function(v) return v .. " min" end,
 	seconds = function(v) return v .. " sec" end,
 	pixels = function(v) return v .. " px" end,
