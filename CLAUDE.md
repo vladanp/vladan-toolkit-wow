@@ -20,7 +20,16 @@ VladanToolkit.toc     # metadata + file load order
 Core.lua              # VT:NewModule, module:On(event, fn), Settings panel, /vt
 Modules/<Name>.lua    # one file per feature
 ```
-SavedVariables: `VladanToolkitDB`, a flat table. `VladanToolkitDB.<ModuleKey>` is the on/off flag.
+SavedVariables: `VladanToolkitDB` (account-wide, flat: `VladanToolkitDB.<ModuleKey>` is the on/off flag,
+`<Key>Pos` a saved frame position) and `VladanToolkitCharDB` (per character, e.g. the auto-buy list).
+
+Core helpers: `VT:Print(...)`, `VT:CreateTextFrame(key, point, x, y)` (draggable text, position saved),
+`VT.commands.<name> = fn(args)` (adds `/vt <name> ...`), `m:IsEnabled()`.
+
+**Reference source:** Blizzard's Forever UI code is mirrored at `github.com/Gethe/wow-ui-source` (branch `forever`)
+and the full API list at `github.com/Ketho/BlizzardInterfaceResources` (branch `forever`, `Resources/GlobalAPI.lua`).
+Check a function exists there before using it. Prefer Blizzard's built-ins (e.g. `C_MerchantFrame.SellAllJunkItems`, the mail `OpenAllMail` button).
+Chat: only change messages through `ChatFrameUtil.AddMessageEventFilter`; replacing chat functions or `AddMessage` taints chat and breaks secret-value handling.
 
 ## Adding a feature
 1. Create `Modules/<Name>.lua`:
@@ -31,7 +40,8 @@ SavedVariables: `VladanToolkitDB`, a flat table. `VladanToolkitDB.<ModuleKey>` i
    ```
 2. Add `Modules\<Name>.lua` to the TOC.
 3. The checkbox appears in `/vt` automatically. Handlers are gated by the toggle, so nothing else is needed.
-   A feature that creates UI must also hide it when disabled (no hook for that yet: add `OnToggle` to Core when the first UI module needs it).
+   A feature that shows UI also sets `m.OnToggle = function(self, enabled) ... end` to show/hide it
+   (called at login and whenever the box is ticked).
 
 ## Dev loop
 - The addon folder is a junction: `C:\Games\World of Warcraft\_classic_beta_\Interface\AddOns\VladanToolkit` → this repo.

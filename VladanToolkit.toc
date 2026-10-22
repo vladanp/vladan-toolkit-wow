@@ -2,10 +2,17 @@
 ## Title: Vladan Toolkit
 ## Notes: All-in-one personal toolkit. Type /vt for settings.
 ## Author: Vladan
-## Version: 0.1.0
+## Version: 0.2.0
 ## IconTexture: Interface\Icons\INV_Misc_Wrench_01
 ## SavedVariables: VladanToolkitDB
+## SavedVariablesPerCharacter: VladanToolkitCharDB
 ## AddonCompartmentFunc: VladanToolkit_Open
 
 Core.lua
 Modules\FastLoot.lua
+Modules\Merchant.lua
+Modules\AutoBuy.lua
+Modules\XPTracker.lua
+Modules\OpenMail.lua
+Modules\BuffReminder.lua
+Modules\ChatLinks.lua
