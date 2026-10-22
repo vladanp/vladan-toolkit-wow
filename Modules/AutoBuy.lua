@@ -16,7 +16,7 @@ m:On("MERCHANT_SHOW", function()
 			local step = math.max(info.stackCount, 1)
 			local qty = math.ceil(need / step) * step
 			local max = math.max(GetMerchantItemMaxStack(i), step)
-			VT:Print("Buying " .. qty .. " x " .. (info.name or id))
+			VT:Notify("Buying " .. qty .. " x " .. (info.name or id))
 			while qty > 0 do
 				local n = math.min(qty, max)
 				BuyMerchantItem(i, n)

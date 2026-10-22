@@ -20,7 +20,15 @@ Type **`/vt`** in game (or use the addon compartment on the minimap) to open the
 | Auto zoom out | Zooms the minimap back out 10 seconds after you zoom in. |
 | Minimap buttons on hover | Hides the clock, tracking and addon buttons until your mouse is over the minimap. |
 
-Settings in `/vt` are grouped: Loot and vendors, Leveling and buffs, Social, Minimap.
+## Settings
+`/vt` opens the main page with general settings: lock windows, chat messages, window scale and a button to reset window positions.
+Each group has its own page in the sidebar (Loot and vendors, Leveling and buffs, Social, Minimap). Extra options sit under
+the feature they belong to and grey out while it is off:
+
+- **XP tracker:** XP per hour window (5 to 60 min), details line, floating XP gains, reset session.
+- **Missing buff reminder:** icon size, spell names, pulsing border.
+- **LFG chat scanner:** how long posts stay, sound and chat line for new matches.
+- **Auto zoom out:** delay (3 to 30 sec).
 
 ## Install
 **WowUp** (updates automatically): Get Addons → Install from URL → `https://github.com/vladanp/vladan-toolkit-wow`.

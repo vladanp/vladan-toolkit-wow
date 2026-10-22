@@ -3,7 +3,7 @@ local m = VT:NewModule("XPTracker", "XP tracker",
 	"XP card with XP per hour, projected level up time, and kills and quests to level. Hover for details, drag to move, right click to reset the session.")
 m.section = "Leveling and buffs"
 
-local WINDOW = 900 -- XP per hour covers the last 15 minutes, so breaks don't skew the projection for long
+local KEEP = 3600 -- gains are kept for the longest XP per hour window (60 min)
 local W, BAR, PAD = 280, 10, 12
 local EASE, SNAP = Enum.StatusBarInterpolation.ExponentialEaseOut, Enum.StatusBarInterpolation.Immediate
 -- "%s dies, you gain %d experience." becomes a pattern that captures the XP number in any locale.
@@ -27,13 +27,14 @@ local function Duration(s)
 end
 
 local function Stats()
+	local window = m:Get("Window") * 60 -- recent minutes only, so breaks don't skew the projection for long
 	local now, recent = GetTime(), 0
 	for _, g in ipairs(session.gains) do
-		if now - g[1] <= WINDOW then recent = recent + g[2] end
+		if now - g[1] <= window then recent = recent + g[2] end
 	end
 	local s = { xp = UnitXP("player"), max = UnitXPMax("player"), rested = GetXPExhaustion() or 0 }
 	s.left = s.max - s.xp
-	s.rate = recent / math.max(math.min(WINDOW, now - session.start), 60) * 3600
+	s.rate = recent / math.max(math.min(window, now - session.start), 60) * 3600
 	s.eta = s.rate > 0 and s.left / s.rate * 3600 or nil
 	s.kills = session.killXP and math.ceil(s.left / session.killXP)
 	s.avgQuest = session.quests > 0 and session.questXP / session.quests or nil
@@ -126,6 +127,7 @@ local function Refresh()
 	if s.rested > 0 then table.insert(parts, ("|cff4d8cff%d%% rested|r"):format(s.rested / s.max * 100)) end
 	if s.kills then table.insert(parts, "~" .. s.kills .. " kills") end
 	if s.quests then table.insert(parts, "~" .. s.quests .. " quests") end
+	if not m:Get("Details") then parts = {} end
 	footer:SetText(table.concat(parts, "   ·   "))
 	f:SetHeight(#parts > 0 and 98 + footer:GetStringHeight() + PAD or 98)
 	f:Show()
@@ -150,7 +152,7 @@ f:SetScript("OnEnter", function(self)
 	if s.rested > 0 then
 		Line("Rested", ("%s  (%d%% of a level)"):format(BreakUpLargeNumbers(s.rested), s.rested / s.max * 100))
 	end
-	Line("XP per hour (last 15 min)", BreakUpLargeNumbers(math.floor(s.rate)))
+	Line(("XP per hour (last %d min)"):format(m:Get("Window")), BreakUpLargeNumbers(math.floor(s.rate)))
 	Line("Projected level up", s.eta and (Duration(s.eta) .. ", around " .. date("%H:%M", time() + s.eta)) or "not enough data yet")
 	if s.kills then
 		Line("Kills to level", ("%d  (last kill %s XP)"):format(s.kills, BreakUpLargeNumbers(session.killXP)))
@@ -188,12 +190,12 @@ m:On("PLAYER_XP_UPDATE", function()
 		local now = GetTime()
 		session.xp = session.xp + amount
 		table.insert(session.gains, { now, amount })
-		while now - session.gains[1][1] > WINDOW do
+		while now - session.gains[1][1] > KEEP do
 			table.remove(session.gains, 1)
 		end
 	end
 	Refresh()
-	if amount > 0 and f:IsShown() then ShowGain(amount) end
+	if amount > 0 and f:IsShown() and m:Get("Gains") then ShowGain(amount) end
 end)
 
 m:On("PLAYER_LEVEL_UP", function()
@@ -215,3 +217,16 @@ m:On("CHAT_MSG_COMBAT_XP_GAIN", function(msg)
 end)
 
 C_Timer.NewTicker(10, Refresh) -- keeps XP per hour and the projection current while idle
+
+m:Option({ key = "Window", title = "XP per hour based on", default = 15, min = 5, max = 60, step = 5,
+	format = function(v) return "last " .. v .. " min" end, onChange = Refresh,
+	desc = "How many recent minutes XP per hour and the level up projection use. Shorter reacts faster, longer is steadier." })
+m:Option({ key = "Details", title = "Details line", default = true, onChange = Refresh,
+	desc = "Show the line with level up time, rested XP, kills and quests to level." })
+m:Option({ key = "Gains", title = "Floating XP gains", default = true,
+	desc = "Show a rising +XP number on the bar for each gain." })
+m:Option({ title = "Session", button = "Reset", onClick = function()
+	ResetSession()
+	Refresh()
+	VT:Print("XP session reset.")
+end, desc = "Start counting XP per hour and session totals from now." })

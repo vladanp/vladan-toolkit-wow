@@ -7,7 +7,7 @@ junk:On("MERCHANT_SHOW", function()
 	local n = C_MerchantFrame.GetNumJunkItems()
 	if n > 0 and C_MerchantFrame.IsSellAllJunkEnabled() then
 		C_MerchantFrame.SellAllJunkItems()
-		VT:Print("Sold " .. n .. " junk item(s).")
+		VT:Notify("Sold " .. n .. " junk item(s).")
 	end
 end)
 
@@ -18,9 +18,9 @@ repair:On("MERCHANT_SHOW", function()
 	local cost, canRepair = GetRepairAllCost()
 	if not canRepair or cost == 0 then return end
 	if cost > GetMoney() then
-		VT:Print("Not enough money to repair (" .. GetMoneyString(cost, true) .. ").")
+		VT:Notify("Not enough money to repair (" .. GetMoneyString(cost, true) .. ").")
 		return
 	end
 	RepairAllItems()
-	VT:Print("Repaired for " .. GetMoneyString(cost, true) .. ".")
+	VT:Notify("Repaired for " .. GetMoneyString(cost, true) .. ".")
 end)

@@ -28,8 +28,14 @@ Modules/<Name>.lua    # one file per feature
 SavedVariables: `VladanToolkitDB` (account wide, flat: `VladanToolkitDB.<ModuleKey>` is the on/off flag,
 `<Key>Pos` a saved frame position) and `VladanToolkitCharDB` (per character, e.g. the auto buy list).
 
-Core helpers: `VT:Print(...)`, `VT:CreateMovable(key, point, x, y, template)` (draggable frame, position saved),
-`VT.commands.<name> = fn(args)` (adds `/vt <name> ...`), `m:IsEnabled()`.
+Core helpers: `VT:Print(...)` (command replies), `VT:Notify(...)` (automatic messages, muted by the "Chat messages" setting),
+`VT:CreateMovable(key, point, x, y, template)` (draggable frame, position saved, follows "Lock windows", "Window scale"
+and "Reset positions"), `VT.commands.<name> = fn(args)` (adds `/vt <name> ...`), `m:IsEnabled()`, `m:Get(optionKey)`,
+`VT.format.percent/minutes/seconds/pixels` (slider labels).
+
+**Settings layout:** `/vt` opens the main page (General: lock windows, chat messages, window scale, reset positions).
+Each `m.section` becomes its own page in the sidebar. A module's checkbox comes first and its `m:Option(...)`
+settings sit indented under it, greyed out while the module is off. Only add an option when a real choice exists.
 
 **UI look:** panels use `"TooltipBackdropTemplate"` (Forever's rounded tooltip panel). Bars use the game's own atlases
 (`UI-HUD-ExperienceBar-*`), which Forever skins with its own art. Fonts: `GameFontNormalLarge` titles,
@@ -47,8 +53,12 @@ taints chat and breaks secret value handling.
    ```lua
    local _, VT = ...
    local m = VT:NewModule("<Key>", "<Checkbox title>", "<Tooltip>") -- 4th arg false = off by default
-   m.section = "Social" -- settings group: Loot and vendors, Leveling and buffs, Social, Minimap
+   m.section = "Social" -- settings page: Loot and vendors, Leveling and buffs, Social, Minimap
    m:On("SOME_EVENT", function(...) --[[ runs only while enabled ]] end)
+   -- optional extra settings, stored as VladanToolkitDB.<Key><OptionKey>, read with m:Get("<OptionKey>"):
+   m:Option({ key = "Delay", title = "Delay", default = 10, min = 3, max = 30, step = 1, format = VT.format.seconds, desc = "..." })
+   m:Option({ key = "Sound", title = "Sound", default = true, desc = "..." })
+   m:Option({ title = "Session", button = "Reset", onClick = fn, desc = "..." })
    ```
 2. Add `Modules\<Name>.lua` to the TOC next to the other modules of its section (a header is added whenever the section changes).
    Secure frames (e.g. click to cast buttons) can't be changed in combat: check `InCombatLockdown()` first;

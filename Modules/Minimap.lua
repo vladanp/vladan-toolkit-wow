@@ -44,14 +44,16 @@ end
 
 -- Auto zoom out
 
-local zoom = VT:NewModule("MinimapAutoZoom", "Auto zoom out", "Zooms the minimap back out 10 seconds after you zoom in.")
+local zoom = VT:NewModule("MinimapAutoZoom", "Auto zoom out", "Zooms the minimap back out a few seconds after you zoom in.")
 zoom.section = "Minimap"
+zoom:Option({ key = "Delay", title = "Zoom out after", default = 10, min = 3, max = 30, step = 1, format = VT.format.seconds,
+	desc = "How long the minimap stays zoomed in." })
 
 local timer
 hooksecurefunc(Minimap, "SetZoom", function(_, level)
 	if timer then timer:Cancel() end
 	if level > 0 and zoom:IsEnabled() then
-		timer = C_Timer.NewTimer(10, function()
+		timer = C_Timer.NewTimer(zoom:Get("Delay"), function()
 			Minimap:SetZoom(0)
 			Minimap.ZoomIn:Enable() -- keep the hover zoom buttons in sync, like Blizzard's own zoom out
 			Minimap.ZoomOut:Disable()

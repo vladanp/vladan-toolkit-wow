@@ -2,8 +2,13 @@ local _, VT = ...
 local m = VT:NewModule("LFGScanner", "LFG chat scanner",
 	"Collects LFG and LFM posts from chat channels into one window, grouped by dungeon. Open it with /vt lfg.")
 m.section = "Social"
+m:Option({ key = "Expire", title = "Keep posts for", default = 15, min = 5, max = 30, step = 5, format = VT.format.minutes,
+	desc = "Posts older than this drop off the list." })
+m:Option({ key = "Sound", title = "Sound for new matches", default = true,
+	desc = "While a filter is set, play a sound when someone new posts a match." })
+m:Option({ key = "ChatAlert", title = "Chat line for new matches", default = true,
+	desc = "While a filter is set and the window is closed, print new matches in chat." })
 
-local EXPIRE = 900 -- posts drop off after 15 minutes
 local W, ROW, ROWS, TOP = 440, 32, 10, 46
 
 -- Dungeons in level order, with the words people use for them in chat.
@@ -189,7 +194,7 @@ function Render()
 	-- Drop old posts, then build the list: a header per dungeon, newest posts first under it.
 	local now, list = GetTime(), {}
 	for sender, p in pairs(posts) do
-		if now - p.time > EXPIRE then
+		if now - p.time > m:Get("Expire") * 60 then
 			posts[sender] = nil
 		elseif Matches(p) then
 			table.insert(list, p)
@@ -281,11 +286,11 @@ m:On("CHAT_MSG_CHANNEL", function(text, sender, _, _, _, _, _, _, _, _, _, guid)
 		dungeon = Dungeon(lower), time = GetTime() }
 	posts[sender] = p
 
-	-- With a filter set, a new matching poster plays a sound (and prints a line if the window is closed).
+	-- With a filter set, a new matching poster can play a sound and print a line while the window is closed.
 	if isNew and Filter() ~= "" and Matches(p) then
-		PlaySound(SOUNDKIT.TELL_MESSAGE)
-		if not f:IsShown() then
-			VT:Print(("%s %s for %s  (/vt lfg)"):format(kind, name, p.dungeon and DUNGEONS[p.dungeon][1] or "a group"))
+		if m:Get("Sound") then PlaySound(SOUNDKIT.TELL_MESSAGE) end
+		if m:Get("ChatAlert") and not f:IsShown() then
+			VT:Notify(("%s %s for %s  (/vt lfg)"):format(kind, name, p.dungeon and DUNGEONS[p.dungeon][1] or "a group"))
 		end
 	end
 	if f:IsShown() then Render() end

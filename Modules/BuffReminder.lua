@@ -20,10 +20,9 @@ local BUFFS = {
 		"Greater Blessing of Sanctuary" } },
 }
 
-local SIZE, GAP = 40, 16
+local GAP = 16
 
 local f = VT:CreateMovable("BuffReminder", "CENTER", 0, 180)
-f:SetHeight(SIZE + 44)
 local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 title:SetPoint("TOP")
 title:SetText("MISSING BUFFS")
@@ -38,8 +37,6 @@ local function Icon(i)
 	b:RegisterForClicks("AnyUp", "AnyDown") -- fires on press or release, whichever the ActionButtonUseKeyDown setting picks
 	b:SetAttribute("type", "spell")
 	b:SetAttribute("unit", "player")
-	b:SetSize(SIZE, SIZE)
-	b:SetPoint("TOPLEFT", (i - 1) * (SIZE + GAP), -16)
 
 	local glow = b:CreateTexture(nil, "BACKGROUND") -- red frame that pulses
 	glow:SetPoint("TOPLEFT", -2, 2)
@@ -52,14 +49,13 @@ local function Icon(i)
 	fade:SetToAlpha(0.2)
 	fade:SetDuration(0.7)
 	fade:SetSmoothing("IN_OUT")
-	pulse:Play()
+	b.pulse = pulse
 
 	b.icon = b:CreateTexture(nil, "ARTWORK")
 	b.icon:SetAllPoints()
 	b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) -- trim the default icon border
 	b.label = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	b.label:SetPoint("TOP", b, "BOTTOM", 0, -4)
-	b.label:SetWidth(SIZE + GAP)
 
 	b:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
@@ -93,20 +89,34 @@ local function Refresh()
 			table.insert(missing, known)
 		end
 	end
+	local size, names = m:Get("Size"), m:Get("Names")
 	for i, info in ipairs(missing) do
 		local b = Icon(i)
 		b.spellID = info.spellID
 		b:SetAttribute("spell", info.name) -- by name, so it casts the highest rank you know
+		b:SetSize(size, size)
+		b:ClearAllPoints()
+		b:SetPoint("TOPLEFT", (i - 1) * (size + GAP), -16)
 		b.icon:SetTexture(info.iconID)
 		b.label:SetText(info.name)
+		b.label:SetWidth(size + GAP)
+		b.label:SetShown(names)
+		if m:Get("Pulse") then b.pulse:Play() else b.pulse:Stop() end
 		b:Show()
 	end
 	for i = #missing + 1, #icons do
 		icons[i]:Hide()
 	end
-	f:SetWidth(math.max(#missing * (SIZE + GAP) - GAP, 1))
+	f:SetSize(math.max(#missing * (size + GAP) - GAP, 1), 16 + size + (names and 28 or 4))
 	f:SetShown(#missing > 0)
 end
+
+m:Option({ key = "Size", title = "Icon size", default = 40, min = 24, max = 64, step = 2, format = VT.format.pixels,
+	onChange = Refresh, desc = "Size of the missing buff icons." })
+m:Option({ key = "Names", title = "Spell names", default = true, onChange = Refresh,
+	desc = "Show the spell name under each icon." })
+m:Option({ key = "Pulse", title = "Pulsing border", default = true, onChange = Refresh,
+	desc = "Animate the red border so missing buffs catch your eye." })
 
 m.OnToggle = Refresh
 -- Fires just before combat lockdown starts, so the secure icons can still be hidden here.
