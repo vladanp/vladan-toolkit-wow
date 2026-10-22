@@ -2,7 +2,7 @@
 ## Title: Vladan Toolkit
 ## Notes: All-in-one personal toolkit. Type /vt for settings.
 ## Author: Vladan
-## Version: 0.2.0
+## Version: @project-version@
 ## IconTexture: Interface\Icons\INV_Misc_Wrench_01
 ## SavedVariables: VladanToolkitDB
 ## SavedVariablesPerCharacter: VladanToolkitCharDB

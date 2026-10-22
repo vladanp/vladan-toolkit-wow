@@ -43,11 +43,20 @@ Chat: only change messages through `ChatFrameUtil.AddMessageEventFilter`; replac
    A feature that shows UI also sets `m.OnToggle = function(self, enabled) ... end` to show/hide it
    (called at login and whenever the box is ticked).
 
+## Releases (how the game gets updates)
+- Every push to `main` that changes `.lua`/`.toc`/`.pkgmeta` runs `.github/workflows/release.yml`: it tags the next
+  patch version (`v0.2.0` → `v0.2.1`) and BigWigs packager publishes a GitHub release (zip + `release.json`, flavor `forever`).
+  Docs-only pushes don't release. To bump minor/major, push a tag like `v0.3.0` together with the commit.
+- `## Version: @project-version@` in the TOC is filled in by the packager.
+- WowUp-CF on this PC installs the addon from `https://github.com/vladanp/vladan-toolkit-wow` (Forever / Classic Beta client)
+  with auto-update on. So the loop is: commit → push → wait ~1 min for the release → WowUp updates → `/reload`.
+- Faster local loop (optional): replace the WowUp folder with a junction to this repo
+  (`cmd /c rmdir "<AddOns>\VladanToolkit"` then `New-Item -ItemType Junction -Path "<AddOns>\VladanToolkit" -Target "D:\Projects\vladan-toolkit-wow"`).
+  Remove the junction with `cmd /c rmdir` (never `Remove-Item -Recurse`, which deletes the repo files) before WowUp updates again.
+
 ## Dev loop
-- The addon folder is a junction: `C:\Games\World of Warcraft\_classic_beta_\Interface\AddOns\VladanToolkit` → this repo.
-  If live Forever uses a different install folder, re-create it:
-  `New-Item -ItemType Junction -Path "<WoW>\<folder>\Interface\AddOns\VladanToolkit" -Target "D:\Projects\vladan-toolkit-wow"`
-- Edit, then `/reload` in-game. A brand-new addon folder or TOC edit may need a full client restart if `/reload` doesn't pick it up.
+- Addons folder: `C:\Games\World of Warcraft\_classic_beta_\Interface\AddOns\VladanToolkit` (live Forever may use a different folder).
+- `/reload` in-game picks up changed files. A brand-new addon folder or TOC edit may need a full client restart.
 - Turn on Lua errors once: `/console scriptErrors 1`.
 - SavedVariables are written on `/reload` or logout: `<WoW>\_classic_beta_\WTF\Account\<id>\SavedVariables\VladanToolkit.lua`.
 - VS Code: install the recommended `ketho.wow-api` extension (autocomplete + diagnostics).

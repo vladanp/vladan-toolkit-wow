@@ -1,0 +1,36 @@
+name: Release
+
+# Every push to main that changes the addon tags the next patch version and publishes a
+# GitHub release (zip + release.json), which WowUp installs and auto-updates from.
+on:
+  push:
+    branches: [main]
+    paths: ["**.lua", "**.toc", ".pkgmeta", ".github/workflows/release.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Tag next patch version (unless this commit is already tagged)
+        run: |
+          if ! git describe --exact-match --tags HEAD >/dev/null 2>&1; then
+            last=$(git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0)
+            IFS=. read -r major minor patch <<< "${last#v}"
+            next="v$major.$minor.$((patch + 1))"
+            git tag "$next"
+            git push origin "$next"
+          fi
+
+      - uses: BigWigsMods/packager@v2
+        env:
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}

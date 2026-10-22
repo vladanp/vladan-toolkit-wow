@@ -1,0 +1,5 @@
+package-as: VladanToolkit
+
+ignore:
+  - CLAUDE.md
+  - README.md
